@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.tuacy.mybatisdemo.mapper.AppMapper">
+
+
+    <!-- 查找指定的用户 -->
+    <select id="selectUser" resultType="com.tuacy.mybatisdemo.model.User">
+        select * from user
+        <where>
+            <if test="user.pkid != null">
+                pkid = #{user.pkid}
+            </if>
+
+            <if test="user.name != null">
+                and name = #{user.name}
+            </if>
+
+            <if test="user.phone != null">
+                and phone = #{user.phone}
+            </if>
+
+            <if test="user.password != null">
+                and password = #{user.password}
+            </if>
+
+        </where>
+
+    </select>
+
+    <!-- 通过用户名查找用户 -->
+    <select id="selectUserByName" resultType="com.tuacy.mybatisdemo.model.User">
+        select * from user
+        <where>
+            <if test=" nameList != null and nameList.size() > 0 ">
+                <trim prefix=" name in ">
+                    <foreach collection="nameList" item="i" index="index" open="(" separator="," close=")">
+                        <if test="i != null">
+                            #{i}
+                        </if>
+                    </foreach>
+                </trim>
+            </if>
+
+        </where>
+
+    </select>
+
+    <!-- 批量插入并且更新主键 -->
+    <insert id="insertUserBatch" parameterType="java.util.List" useGeneratedKeys="true" keyProperty="pkid">
+        insert into user (name, password, phone)
+        values
+        <foreach collection="list" item="item" index="index" separator=",">
+            <trim prefix="(" suffix=")" suffixOverrides=",">
+                <choose>
+                    <when test="item.name != null">
+                        #{item.name,jdbcType=VARCHAR},
+                    </when>
+                    <otherwise>
+                        null,
+                    </otherwise>
+                </choose>
+                <choose>
+                    <when test="item.password != null">
+                        #{item.password,jdbcType=VARCHAR},
+                    </when>
+                    <otherwise>
+                        null,
+                    </otherwise>
+                </choose>
+                <choose>
+                    <when test="item.phone != null">
+                        #{item.phone,jdbcType=VARCHAR},
+                    </when>
+                    <otherwise>
+                        null,
+                    </otherwise>
+                </choose>
+            </trim>
+        </foreach>
+    </insert>
+
+    <!-- 批量更新 -->
+    <update id="updateUserBatch" parameterType="java.util.List">
+        update user
+        <trim prefix="set" suffixOverrides=",">
+            <trim prefix="name =case" suffix="end,">
+                <foreach collection="list" item="i" index="index">
+                    <if test="i.name!=null">
+                        when pkid=#{i.pkid} then #{i.name}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix=" password =case" suffix="end,">
+                <foreach collection="list" item="i" index="index">
+                    <if test="i.password!=null">
+                        when pkid=#{i.pkid} then #{i.password}
+                    </if>
+                </foreach>
+            </trim>
+
+            <trim prefix="phone =case" suffix="end,">
+                <foreach collection="list" item="i" index="index">
+                    <if test="i.phone!=null">
+                        when pkid=#{i.pkid} then #{i.phone}
+                    </if>
+                </foreach>
+            </trim>
+        </trim>
+        where
+        <foreach collection="list" separator="or" item="i" index="index">
+            pkid=#{i.pkid}
+        </foreach>
+    </update>
+</mapper>
