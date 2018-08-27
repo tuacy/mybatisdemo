@@ -1,5 +1,7 @@
 package com.tuacy.mybatisdemo.service.impl;
 
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
 import com.tuacy.mybatisdemo.mapper.AppMapper;
 import com.tuacy.mybatisdemo.model.User;
 import com.tuacy.mybatisdemo.service.IUserService;
@@ -21,7 +23,11 @@ public class UserServiceImpl implements IUserService {
 
     @Override
     public List<User> getUserListByName(List<String> nameList) {
-        return appMapper.selectUserByName(nameList);
+        Page<User> pageInfo = PageHelper.startPage(1, 20, true);
+        appMapper.selectUserByName(nameList);
+        long count = pageInfo.getTotal();
+        int pageNum = pageInfo.getPageNum();
+        return pageInfo;
     }
 
     @Override
